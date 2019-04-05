@@ -8,6 +8,7 @@
 int array[100];
 pthread_t tid[100];
 
+
 struct Factorial{
 	int value;
 };
@@ -24,7 +25,7 @@ void* tulis(void* args){
 }
 
 int main(){
-  	int n=0, i=0, j=0, order, tmp;
+  	int n=0, i=0, j=0, urutan, tmp;
   	char blank;
   	do {
       		scanf("%d%c", &array[i], &blank);
@@ -51,11 +52,10 @@ int main(){
   	struct Factorial factorial;
   	while(i<n) {
  		factorial.value = array[i];
- 		order=i;
- 		pthread_create(&tid[order], NULL, &tulis, (void *)&factorial);
-        	pthread_join(tid[order], NULL);
+ 		urutan=i;
+ 		pthread_create(&tid[urutan], NULL, &tulis, (void *)&factorial);
+        	pthread_join(tid[urutan], NULL);
      		i++;
-  	}
-    
+  	}   
     	return 0;
 }
