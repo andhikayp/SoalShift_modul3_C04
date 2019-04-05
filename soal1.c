@@ -51,7 +51,7 @@ int main(){
   	struct Factorial factorial;
   	while(i<n) {
  		factorial.value = array[i];
- 		order=array[i];
+ 		order=i;
  		pthread_create(&tid[order], NULL, &tulis, (void *)&factorial);
         	pthread_join(tid[order], NULL);
      		i++;
