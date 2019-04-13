@@ -749,6 +749,6 @@ int main(int argc, char const *argv[])
     return 0;
 }
 ```
-pada fungsi utama program makanan, nilai value digunakan bersama-sama dengan program utama. apabila angka 1 ditekan maka nilai value akan bertambah di program makanan dan di program utama. apabilaangka 2 ditekan maka program akan berhenti
+pada fungsi utama program makanan, nilai value digunakan bersama-sama dengan program utama. apabila angka 1 ditekan maka nilai value akan bertambah di program makanan dan di program utama. apabila angka 2 ditekan maka program akan berhenti
 
 
