@@ -384,6 +384,123 @@ if(Spirit_Status <= 0){
 	- Wajib Menggunakan Multithreading
 	- Boleh menggunakan system
 ##  Penjelasan
+```
+void* membuat(void *arg)
+{
+    pthread_t id=pthread_self();
+    iter=0;
+    if(pthread_equal(id,tid[0]))//thread untuk menjalankan counter
+    {
+        system("ps aux --no-heading | head -10 > ~/Documents/FolderProses1/SimpanProses1.txt");   
+    }
+    else if(pthread_equal(id,tid[1]))
+    {
+        system("ps aux --no-heading | head -10 > ~/Documents/FolderProses2/SimpanProses2.txt");
+    }
+    iter=1;
+    return NULL;
+}
+```
+fungsi "membuat" digunakan untuk menyimpan list proses yang sedang berjalan (ps -aux) maksimal 10 list proses. Dimana awalnya list proses disimpan dalam di 2 file ekstensi .txt yaitu SimpanProses1.txt di direktori /home/Document/FolderProses1 dan SimpanProses2.txt di direktori /home/Document/FolderProses2
+```
+void* mengkompres(void *arg)
+{
+    while(iter!=1)
+    {
+
+    }
+    pthread_t id=pthread_self();
+    if(pthread_equal(id,tid[2]))//thread untuk menjalankan counter
+    {
+        system("zip -qmj ~/Documents/FolderProses1/KompresProses1 ~/Documents/FolderProses1/SimpanProses1.txt");
+    }
+    else if(pthread_equal(id,tid[3]))
+    {
+        system("zip -qmj ~/Documents/FolderProses2/KompresProses2 ~/Documents/FolderProses2/SimpanProses2.txt");
+    }
+    iter=2;
+    return NULL;
+}
+```
+funsi "mengkompres" digunakan untuk kompres zip dengan format nama file KompresProses1.zip dan KompresProses2.zip dan file SimpanProses1.txt dan SimpanProses2.txt akan otomatis terhapus
+```
+void* mengekstrak(void *arg)
+{
+    while(iter!=2)
+    {
+
+    }
+    sleep(15);
+    pthread_t id=pthread_self();
+    if(pthread_equal(id,tid[4]))//thread untuk menjalankan counter
+    {
+        system("unzip -qd ~/Documents/FolderProses1 ~/Documents/FolderProses1/KompresProses1.zip");
+    }
+    else if(pthread_equal(id,tid[5]))
+    {
+        system("unzip -qd ~/Documents/FolderProses2 ~/Documents/FolderProses2/KompresProses2.zip");  
+    }
+    return NULL;
+}
+```
+fungsi "mengekstrak" digunakan untuk mengekstrak kembali file KompresProses1.zip dan KompresProses2.zip
+```
+int main(void)
+{
+    int i=0;
+    int err;
+    while(i<2)//looping membuat thread 2x
+    {
+        err=pthread_create(&(tid[i]),NULL,&membuat,NULL);//membuat thread
+        if(err!=0)//cek error
+        {
+            printf("\n can't create thread : [%s]",strerror(err));
+        }
+        else 
+        {
+            printf("\n create thread success");
+        }
+        i++;
+    }
+    while(i<4)//looping membuat thread 2x
+    {
+        err=pthread_create(&(tid[i]),NULL,&mengkompres,NULL);//membuat thread
+        if(err!=0)//cek error
+        {
+            printf("\n can't create thread : [%s]",strerror(err));
+        }
+        else
+        {
+            printf("\n create thread success");
+        }
+        i++;
+    }
+    printf("\n Menunggu 15 detik untuk mengekstrak kembali");
+    while(i<6)//looping membuat thread 2x
+    {
+        err=pthread_create(&(tid[i]),NULL,&mengekstrak,NULL);//membuat thread
+        if(err!=0)//cek error
+        {
+            printf("\n can't create thread : [%s]",strerror(err));
+        }
+        else
+        {
+            // printf("\n create thread success");
+        }
+        i++;
+    }
+    printf("\n DONE!");
+    pthread_join(tid[0],NULL);
+    pthread_join(tid[1],NULL);
+    pthread_join(tid[2],NULL);
+    pthread_join(tid[3],NULL);
+    pthread_join(tid[4],NULL);
+    pthread_join(tid[5],NULL);
+    return 0;
+}
+```
+Pada fungsi utama, program membuat thread yang dapat berjalan bersamaan. 2 proses akan berjalan bersama pada fungsi "membuat". Saat kedua proses tersebut selesai menjalankan tugasnya maka 2 proses berikutnya akan menjalankan fungsi "mengkompres". Untuk menjalankan fungsi "mengekstrak", harus menunggu sampai fungsi "mengkompres" selesai dijalankan dan menunggu 15 detik. 
+
 
 ##  No. 5
 5.	Angga, adik Jiwang akan berulang tahun yang ke sembilan pada tanggal 6 April besok. Karena lupa menabung, Jiwang tidak mempunyai uang sepeserpun untuk membelikan Angga kado. Kamu sebagai sahabat Jiwang ingin membantu Jiwang membahagiakan adiknya sehingga kamu menawarkan bantuan membuatkan permainan komputer sederhana menggunakan program C. Jiwang sangat menyukai idemu tersebut. Berikut permainan yang Jiwang minta. 
@@ -393,4 +510,9 @@ if(Spirit_Status <= 0){
 	- Monster pemain memiliki health status yang berawal dengan nilai 300. Variabel ini bertambah (regenerasi)daa 5 setiap 10 detik ketika monster dalam keadaan standby.
 	- Monster pemain dapat memasuki keadaan battle. Dalam keadaan ini, food status(fitur b), hygiene status'(fitur c), dan ‘regenerasi’(fitur d) tidak akan berjalan. Health status dari monster dimulai dari darah saat monster pemain memasuki battle. Monster pemain akan bertarung dengan monster NPC yang memiliki darah 100. Baik monster pemain maupun NPC memiliki serangan sebesar 20. Monster pemain dengan monster musuh akan menyerang secara bergantian. 
 	- Fitur shop, pemain dapat membeli makanan sepuas-puasnya selama stok di toko masih tersedia.
+	
+##  Penjelasan
+```
+```
+
 
