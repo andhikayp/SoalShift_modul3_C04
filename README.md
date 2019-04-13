@@ -513,6 +513,242 @@ Pada fungsi utama, program membuat thread yang dapat berjalan bersamaan. 2 prose
 	
 ##  Penjelasan
 ```
+char getch() 
+{
+    char ch;
+    tcgetattr(0, &old); /* grab old terminal i/o settings */
+    new = old; /* make new settings same as old settings */
+    new.c_lflag &= ~ICANON; /* disable buffered i/o */
+    // new.c_lflag |= ECHO; /* set echo mode */
+    new.c_lflag &= ~ECHO; /* set no echo mode */
+    tcsetattr(0, TCSANOW, &new); /* use these new terminal i/o settings now */
+    ch = getchar();
+    tcsetattr(0, TCSANOW, &old);
+    return ch;
+}
 ```
+fungsi "getch" digunakan untuk mendeteksi input berupa key press. (Program bisa berjalan tanpa perlu menekan tombol enter)
+```
+void* input()
+{
+    while ((a = getch())) 
+    {
+        if(aksi == standby)
+        {
+            if(a=='1')
+            {
+                if(food_stock>0)
+                {
+                    eat = 1;
+                    food_stock--;
+                }
+                else
+                    printf("Tidak punya makanan");
+            }
+            else if(a=='2' && !cd)
+                bath=1;
+            else if(a=='3')
+            {
+                system("clear");
+                turn=0;
+                aksi=battle;
+            }
+            else if(a=='4')
+            {
+                system("clear");
+                aksi=shop;
+            }
+            else if(a=='5')
+                stop=1;
+        }
+        else if(aksi==battle)
+        {
+            if(a=='1')
+            {
+                if(turn==0&&opponent>=20)
+                {
+                	opponent=opponent-ATT;
+                	sleep(1);
+                	turn=1;
+                }
+                else 
+                	printf("Your monster has already won\n");
+            }
+            else if(a=='2')
+            {
+                system("clear");
+                turn=0;
+                opponent=100;
+                aksi=standby;
+            }
+        }
+        else if(aksi==shop)
+        {
+            if(a=='1')
+            {
+                if(*value>0)
+                {
+                    food_stock++;
+                    *value=*value-1;
+                }
+                else
+                    printf("Stock is empty");
+            }
+            else if(a=='2')
+            {
+                system("clear");
+                aksi=standby;
+            }
+        }
+    }
+}
+```
+fungsi "input" digunakan untuk mendeteksi input lalu diarahkan ke menu yang sesuai dengan angka yang diinputkan
+```
+void* interface()
+{
+    while(1)
+    {
+        if(aksi==standby)
+        {
+            printf("Standby Mode\nHealth : %d\nHunger : %d\nHygiene : %d\n", health, hunger, hyg);
+            printf("Food left : %d\n",food_stock);
+            if(cd>0)
+            	printf("Bath will be ready in %ds\n",cd);
+            else 
+            	printf("Bath is ready\n");
+            printf("Choices\n1. Eat\n2. Bath\n3. Battle\n4. Shop\n5. Exit\n");
+            sleep(1);
+            system("clear");
+        }
+        else if(aksi==battle)
+        {
+            printf("Battle Mode\nMonster's Health : %d\nOpponent's Health : %d\n", health, opponent);
+            printf("Choices\n1. Attack\n2. Run\n");
+            sleep(1);
+            system("clear");
+            if(turn==1 && opponent>0)
+            {
+                turn=0;
+            	health=health-ATT;
+            }
+        }
+        else if(aksi == shop)
+        {
+            printf("Shop Mode\nShop Food Stock : %d\nYour Food Stock : %d\n", *value, food_stock);
+            printf("Choices\n1. Buy\n2. Back\n");
+            sleep(1);
+            system("clear");
+        }
+    }
+}
+```
+fungsi "interface" digunakan untuk menampilkan tampilan saat kita menginputkan angka
+```
+void* hunger_status()
+{
+    int i=0;
+    while(i<10)
+    {
+        if(aksi!=battle)
+        {
+            sleep(1);
+            if(eat)
+            {
+                i=0;
+                eat=0;
+                hunger=hunger+15;
+                continue;
+            }
+            i++;
+            if(i==10)
+            	hunger=hunger-5;
+            i=i%10;
+        }
+    }
+}
+```
+fungsi "hunger_status" digunakan untuk menghitung hunger status setiap detiknya. Hunger status tidak akan berjalan saat kondisi battle. Hunger status akan bertambah 15 setiap makan dan akan berkurang 5 setiap 10s
+```
+void* hygiene_status()
+{
+    int i=0;
+    while(i<30)
+    {
+        if(aksi!=battle)
+        {
+            sleep(1);
+            if(bath)
+            {
+                i=0;
+                cd=20;
+                bath=0;
+                hyg=hyg+30;
+                continue;
+            }
+            i++;
+            if(cd>0)
+            	cd--;
+            if(i==30) 
+            	hyg=hyg-10;
+            i%=30;
+        }
+    }
+}
+```
+fungsi "hygiene_status" digunakan untuk menghitung hygiene status setiap detiknya. Hygiene status tidak akan berjalan saat kondisi battle. Hygiene status akan bertambah 30 setiap mandi (mandi harus menunggu 20s) dan akan berkurang 10 setiap 30s
+```
+int main(int argc, char const *argv[]) 
+{
+    mem = shmget(key,sizeof(int),IPC_CREAT|0666);
+    value = shmat(mem,NULL,0);
+
+    pthread_create(&t[0],NULL,input,NULL);
+    pthread_create(&t[1],NULL,hunger_status,NULL);
+    pthread_create(&t[2],NULL,health_status,NULL);
+    pthread_create(&t[3],NULL,hygiene_status,NULL);
+    pthread_create(&t[4],NULL,interface,NULL);
+
+    while(hunger>0&&hyg>0&&health>0&&!stop);
+    pthread_cancel(t[0]);
+    tcsetattr(0, TCSANOW, &old);
+    printf("game has ended\n");
+    return 0;
+}
+```
+Pada fungsi utama semua thread akan berjalan bersamaan dan permainan akan berhenti ketika hunger, hygiene, health mencapai angka 0
+variable value digunakan sebagai shared memory yang nilainya dapat berubah-ubah saat digunakan bersama-sama oleh 2 program.
+```
+void* food_stock()
+{
+    while(1)
+    {
+        printf("Shop\nFood Stock : %d\nChoices\n1.Restock\n2.Exit\n",*value);
+        sleep(1);
+        system("clear");
+    }
+}
+```
+fungsi food_stock digunakan untuk menampilkan keadaan shop
+```
+int main(int argc, char const *argv[]) 
+{
+    mem = shmget(key,sizeof(int),IPC_CREAT|0666);
+    value = shmat(mem,NULL,0);
+    
+    pthread_create(&t,NULL,food_stock,NULL);
+    while ((a = getch())) 
+    {
+        if(a=='1') 
+            *value=*value+1;
+        else if(a=='2') 
+            break;
+    }
+    if(a=='2') 
+        exit;
+    return 0;
+}
+```
+pada fungsi utama program makanan, nilai value digunakan bersama-sama dengan program utama. apabila angka 1 ditekan maka nilai value akan bertambah di program makanan dan di program utama. apabilaangka 2 ditekan maka program akan berhenti
 
 
